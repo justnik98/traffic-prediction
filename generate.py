@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # Суммарная интенсивность входного потока
 l = 25
 # Количество генерируемых данных
-Num = 10000
+Num = 2000
 
 
 def write2file(filename, data):
