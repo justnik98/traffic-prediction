@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import math
 
 # Задаем начальную и конечную дату
-start_date = dt.datetime(2020, 4, 1)
-end_date = dt.datetime(2023, 4, 1)
 
 # Загружаем данные с Yahoo Finance
-data = yf.download("GOOGL", start=start_date, end=end_date)
+#data = yf.download("GOOGL", start=start_date, end=end_date)
+
+data = pd.read_csv('burst_data.csv', delimiter= '\t', header= None)
 
 # Выводим информацию о загруженных данных
 pd.set_option('display.max_rows', 4)
@@ -27,18 +27,14 @@ test_data = data[training_data_len:]
 print("Размер обучающей выборки:", train_data.shape)
 print("Размер тестовой выборки:", test_data.shape)
 
-# Проверим, как устроены многоуровневые колонки
-print("Колонки данных:", data.columns)
-
-# Доступ к значениям 'Open' для тикера 'GOOGL'
-dataset_train = train_data[('Open', 'GOOGL')].values
+dataset_train = train_data.values
 
 # Преобразуем в 2D массив для использования в моделях машинного обучения
 dataset_train = np.reshape(dataset_train, (-1, 1))
 print("Размер обучающих данных:", dataset_train.shape)
 
-# Доступ к тестовым данным для 'Open' для тикера 'GOOGL'
-dataset_test = test_data[('Open', 'GOOGL')].values
+
+dataset_test = test_data.values
 dataset_test = np.reshape(dataset_test, (-1, 1))
 print("Размер тестовых данных:", dataset_test.shape)
 
@@ -48,14 +44,12 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 # scaling dataset
 scaled_train = scaler.fit_transform(dataset_train)
 
-print(scaled_train[:5])
 # Selecting Open Price values
-dataset_test = test_data.Open.values
 # Reshaping 1D to 2D array
 dataset_test = np.reshape(dataset_test, (-1, 1))
 # Normalizing values between 0 and 1
 scaled_test = scaler.fit_transform(dataset_test)
-print(*scaled_test[:5])
+
 X_train = []
 y_train = []
 for i in range(50, len(scaled_train)):
@@ -104,7 +98,7 @@ regressor.add(SimpleRNN(units=50,
                         activation="tanh",
                         return_sequences=True,
                         input_shape=(X_train.shape[1], 1)))
-regressor.add(Dropout(0.2))
+regressor.add(Dropout(0.1))
 
 regressor.add(SimpleRNN(units=50,
                         activation="tanh",
@@ -196,32 +190,29 @@ y_GRU = regressorGRU.predict(X_test)
 y_RNN_O = scaler.inverse_transform(y_RNN)
 y_LSTM_O = scaler.inverse_transform(y_LSTM)
 y_GRU_O = scaler.inverse_transform(y_GRU)
-fig, axs = plt.subplots(3, figsize=(18, 12), sharex=True, sharey=True)
+fig, axs = plt.subplots(3, figsize=(18, 12))
 fig.suptitle('Model Predictions')
 
 # Plot for RNN predictions
-axs[0].plot(train_data.index[150:], train_data.Open[150:], label="train_data", color="b")
-axs[0].plot(test_data.index, test_data.Open, label="test_data", color="g")
-axs[0].plot(test_data.index[50:], y_RNN_O, label="y_RNN", color="brown")
+
+axs[0].plot(dataset_test[50:], label="test_data", color="g")
+axs[0].plot(y_RNN_O, label="y_RNN", color="brown")
 axs[0].legend()
 axs[0].title.set_text("Basic RNN")
 
 # Plot for LSTM predictions
-axs[1].plot(train_data.index[150:], train_data.Open[150:], label="train_data", color="b")
-axs[1].plot(test_data.index, test_data.Open, label="test_data", color="g")
-axs[1].plot(test_data.index[50:], y_LSTM_O, label="y_LSTM", color="orange")
+
+axs[1].plot(dataset_test[50:], label="test_data", color="g")
+axs[1].plot(y_LSTM_O, label="y_LSTM", color="orange")
 axs[1].legend()
 axs[1].title.set_text("LSTM")
 
 # Plot for GRU predictions
-axs[2].plot(train_data.index[150:], train_data.Open[150:], label="train_data", color="b")
-axs[2].plot(test_data.index, test_data.Open, label="test_data", color="g")
-axs[2].plot(test_data.index[50:], y_GRU_O, label="y_GRU", color="red")
+
+axs[2].plot(dataset_test[50:], label="test_data", color="g")
+axs[2].plot( y_GRU_O, label="y_GRU", color="red")
 axs[2].legend()
 axs[2].title.set_text("GRU")
-
-plt.xlabel("Days")
-plt.ylabel("Open price")
 
 plt.show()
 
@@ -233,27 +224,34 @@ from sklearn.metrics import r2_score
 def calculate_mse(y_true, y_pred):
     return mean_squared_error(y_true, y_pred)
 
-
+# Функция для вычисления R2
 def calculate_r2(y_true, y_pred):
     return r2_score(y_true, y_pred)
 
+# Функция для вычисления WAPE
+def calculate_wape(y_true, y_pred):
+    numerator = np.sum(np.abs(y_true - y_pred))
+    denominator = np.sum(np.abs(y_true))
+    return numerator / denominator
 
 # Расчет MSE для каждой модели
-mse_RNN = calculate_mse(scaled_test[50:], y_RNN)
-mse_LSTM = calculate_mse(scaled_test[50:], y_LSTM)
-mse_GRU = calculate_mse(scaled_test[50:], y_GRU)
+mse_RNN = calculate_mse(dataset_test[50:], y_RNN_O)
+mse_LSTM = calculate_mse(dataset_test[50:], y_LSTM_O)
+mse_GRU = calculate_mse(dataset_test[50:], y_GRU_O)
 
 # Выводим результаты
 print(f'MSE для модели RNN: {mse_RNN}')
 print(f'MSE для модели LSTM: {mse_LSTM}')
 print(f'MSE для модели GRU: {mse_GRU}')
 
-# Расчет MSE для каждой модели
-R2_RNN = calculate_r2(scaled_test[50:], y_RNN)
-R2_LSTM = calculate_r2(scaled_test[50:], y_LSTM)
-R2_GRU = calculate_r2(scaled_test[50:], y_GRU)
+wape_RNN = calculate_wape(dataset_test[50:], y_RNN_O)
+wape_LSTM = calculate_wape(dataset_test[50:], y_LSTM_O)
+wape_GRU = calculate_wape(dataset_test[50:], y_GRU_O)
 
 # Выводим результаты
-print(f'R2 score для модели RNN: {R2_RNN}')
-print(f'R2 score для модели LSTM: {R2_LSTM}')
-print(f'R2 score для модели GRU: {R2_GRU}')
+print(f'MSE для модели RNN: {wape_RNN}')
+print(f'MSE для модели LSTM: {wape_LSTM}')
+print(f'MSE для модели GRU: {wape_GRU}')
+
+
+
