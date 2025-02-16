@@ -52,8 +52,8 @@ scaled_test = scaler.fit_transform(dataset_test)
 
 X_train = []
 y_train = []
-for i in range(50, len(scaled_train)):
-    X_train.append(scaled_train[i - 50:i, 0])
+for i in range(25, len(scaled_train)):
+    X_train.append(scaled_train[i - 25:i, 0])
     y_train.append(scaled_train[i, 0])
     if i <= 51:
         print(X_train)
@@ -61,8 +61,8 @@ for i in range(50, len(scaled_train)):
         print()
 X_test = []
 y_test = []
-for i in range(50, len(scaled_test)):
-    X_test.append(scaled_test[i - 50:i, 0])
+for i in range(25, len(scaled_test)):
+    X_test.append(scaled_test[i - 25:i, 0])
     y_test.append(scaled_test[i, 0])
 # The data is converted to Numpy array
 X_train, y_train = np.array(X_train), np.array(y_train)
@@ -92,96 +92,114 @@ from sklearn.metrics import mean_squared_error
 
 # initializing the RNN
 regressor = Sequential()
-
-# adding RNN layers and dropout regularization
-regressor.add(SimpleRNN(units=50,
-                        activation="tanh",
-                        return_sequences=True,
-                        input_shape=(X_train.shape[1], 1)))
-regressor.add(Dropout(0.1))
-
-regressor.add(SimpleRNN(units=50,
-                        activation="tanh",
-                        return_sequences=True))
-
-regressor.add(SimpleRNN(units=50,
-                        activation="tanh",
-                        return_sequences=True))
-
-regressor.add(SimpleRNN(units=50))
-
-# adding the output layer
-regressor.add(Dense(units=1, activation='sigmoid'))
-
-# compiling RNN
-regressor.compile(optimizer=SGD(learning_rate=0.01,
-                                decay=1e-6,
-                                momentum=0.9,
-                                nesterov=True),
-                  loss="mean_squared_error")
-
-# fitting the model
-regressor.fit(X_train, y_train, epochs=20, batch_size=2)
-regressor.summary()
 # Initialising the model
 regressorLSTM = Sequential()
-
-# Adding LSTM layers
-regressorLSTM.add(LSTM(50,
-                       return_sequences=True,
-                       input_shape=(X_train.shape[1], 1)))
-regressorLSTM.add(LSTM(50,
-                       return_sequences=False))
-regressorLSTM.add(Dense(25))
-
-# Adding the output layer
-regressorLSTM.add(Dense(1))
-
-# Compiling the model
-regressorLSTM.compile(optimizer='adam',
-                      loss='mean_squared_error',
-                      metrics=["accuracy"])
-
-# Fitting the model
-regressorLSTM.fit(X_train,
-                  y_train,
-                  batch_size=1,
-                  epochs=12)
-regressorLSTM.summary()
-# Initialising the model
+#Initialising the model
 regressorGRU = Sequential()
 
-# GRU layers with Dropout regularisation
-regressorGRU.add(GRU(units=50,
-                     return_sequences=True,
-                     input_shape=(X_train.shape[1], 1),
-                     activation='tanh'))
-regressorGRU.add(Dropout(0.2))
+###### RNN ######
+def RNN_MODEL():
+    # initializing the RNN
 
-regressorGRU.add(GRU(units=50,
-                     return_sequences=True,
-                     activation='tanh'))
+    # adding RNN layers and dropout regularization
+    regressor.add(SimpleRNN(units=25,
+                            activation="tanh",
+                            return_sequences=True,
+                            input_shape=(X_train.shape[1], 1)))
+    regressor.add(Dropout(0.1))
 
-regressorGRU.add(GRU(units=50,
-                     return_sequences=True,
-                     activation='tanh'))
+    regressor.add(SimpleRNN(units=25,
+                            activation="tanh",
+                            return_sequences=True))
 
-regressorGRU.add(GRU(units=50,
-                     activation='tanh'))
+    regressor.add(SimpleRNN(units=25,
+                            activation="tanh",
+                            return_sequences=True))
 
-# The output layer
-regressorGRU.add(Dense(units=1,
-                       activation='relu'))
-# Compiling the RNN
-regressorGRU.compile(optimizer=SGD(learning_rate=0.01,
-                                   decay=1e-7,
-                                   momentum=0.9,
-                                   nesterov=False),
-                     loss='mean_squared_error')
+    regressor.add(SimpleRNN(units=25))
 
-# Fitting the data
-regressorGRU.fit(X_train, y_train, epochs=20, batch_size=1)
-regressorGRU.summary()
+    # adding the output layer
+    regressor.add(Dense(units=1, activation='sigmoid'))
+
+    # compiling RNN
+    regressor.compile(optimizer=SGD(learning_rate=0.01,
+                                    decay=1e-6,
+                                    momentum=0.9,
+                                    nesterov=True),
+                      loss="mean_squared_error")
+
+    # fitting the model
+    regressor.fit(X_train, y_train, epochs=20, batch_size=2)
+    regressor.summary()
+
+
+###### LSTM ######
+def LSTM_MODEL():
+
+
+    # Adding LSTM layers
+    regressorLSTM.add(LSTM(25,
+                           return_sequences=True,
+                           input_shape=(X_train.shape[1], 1)))
+    regressorLSTM.add(LSTM(25,
+                           return_sequences=False))
+    regressorLSTM.add(Dense(25))
+
+    # Adding the output layer
+    regressorLSTM.add(Dense(1))
+
+    # Compiling the model
+    regressorLSTM.compile(optimizer='adam',
+                          loss='mean_squared_error',
+                          metrics=["accuracy"])
+
+    # Fitting the model
+    regressorLSTM.fit(X_train,
+                      y_train,
+                      batch_size=1,
+                      epochs=12)
+    regressorLSTM.summary()
+
+def GRU_MODEL():
+
+
+    # GRU layers with Dropout regularisation
+    regressorGRU.add(GRU(units=25,
+                         return_sequences=True,
+                         input_shape=(X_train.shape[1],1),
+                         activation='tanh'))
+    regressorGRU.add(Dropout(0.2))
+
+    regressorGRU.add(GRU(units=25,
+                         return_sequences=True,
+                         activation='tanh'))
+
+    regressorGRU.add(GRU(units=25,
+                         return_sequences=True,
+                         activation='tanh'))
+
+    regressorGRU.add(GRU(units=25,
+                         activation='tanh'))
+
+    # The output layer
+    regressorGRU.add(Dense(units=1,
+                           activation='relu'))
+    # Compiling the RNN
+    regressorGRU.compile(optimizer=SGD(learning_rate=0.01,
+                                       decay=1e-7,
+                                       momentum=0.9,
+                                       nesterov=False),
+                         loss='mean_squared_error')
+
+    # Fitting the data
+    regressorGRU.fit(X_train,y_train,epochs=20,batch_size=1)
+    regressorGRU.summary()
+
+
+RNN_MODEL()
+LSTM_MODEL()
+GRU_MODEL()
+
 # predictions with X_test data
 y_RNN = regressor.predict(X_test)
 y_LSTM = regressorLSTM.predict(X_test)
@@ -195,21 +213,21 @@ fig.suptitle('Model Predictions')
 
 # Plot for RNN predictions
 
-axs[0].plot(dataset_test[50:], label="test_data", color="g")
+axs[0].plot(dataset_test[25:], label="test_data", color="g")
 axs[0].plot(y_RNN_O, label="y_RNN", color="brown")
 axs[0].legend()
 axs[0].title.set_text("Basic RNN")
 
 # Plot for LSTM predictions
 
-axs[1].plot(dataset_test[50:], label="test_data", color="g")
+axs[1].plot(dataset_test[25:], label="test_data", color="g")
 axs[1].plot(y_LSTM_O, label="y_LSTM", color="orange")
 axs[1].legend()
 axs[1].title.set_text("LSTM")
 
 # Plot for GRU predictions
 
-axs[2].plot(dataset_test[50:], label="test_data", color="g")
+axs[2].plot(dataset_test[25:], label="test_data", color="g")
 axs[2].plot( y_GRU_O, label="y_GRU", color="red")
 axs[2].legend()
 axs[2].title.set_text("GRU")
@@ -235,23 +253,23 @@ def calculate_wape(y_true, y_pred):
     return numerator / denominator
 
 # Расчет MSE для каждой модели
-mse_RNN = calculate_mse(dataset_test[50:], y_RNN_O)
-mse_LSTM = calculate_mse(dataset_test[50:], y_LSTM_O)
-mse_GRU = calculate_mse(dataset_test[50:], y_GRU_O)
+mse_RNN = calculate_mse(dataset_test[25:], y_RNN_O)
+mse_LSTM = calculate_mse(dataset_test[25:], y_LSTM_O)
+mse_GRU = calculate_mse(dataset_test[25:], y_GRU_O)
 
 # Выводим результаты
 print(f'MSE для модели RNN: {mse_RNN}')
 print(f'MSE для модели LSTM: {mse_LSTM}')
 print(f'MSE для модели GRU: {mse_GRU}')
 
-wape_RNN = calculate_wape(dataset_test[50:], y_RNN_O)
-wape_LSTM = calculate_wape(dataset_test[50:], y_LSTM_O)
-wape_GRU = calculate_wape(dataset_test[50:], y_GRU_O)
+wape_RNN = calculate_wape(dataset_test[25:], y_RNN_O)
+wape_LSTM = calculate_wape(dataset_test[25:], y_LSTM_O)
+wape_GRU = calculate_wape(dataset_test[25:], y_GRU_O)
 
 # Выводим результаты
-print(f'MSE для модели RNN: {wape_RNN}')
-print(f'MSE для модели LSTM: {wape_LSTM}')
-print(f'MSE для модели GRU: {wape_GRU}')
+print(f'WAPE для модели RNN: {wape_RNN}')
+print(f'WAPE для модели LSTM: {wape_LSTM}')
+print(f'WAPE для модели GRU: {wape_GRU}')
 
 
 
